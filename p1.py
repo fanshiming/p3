@@ -49,13 +49,7 @@ def key_breakup_to16keys(key=None):
         else:
             key64.append(False)
 
-    #校验   秘钥需要具备奇数个1
-    #idx = 0
-    #for t in key64:
-    #    if t:
-    #        idx = idx + 1
-    #if idx%2 == 0:
-    #    raise BaseException('需要奇数个1')
+    #校验  以后在做 
 
 
     #对key[64]做变换，得keyT[56]
@@ -72,18 +66,19 @@ def key_breakup_to16keys(key=None):
     #计算16个子密钥subkey
     idx = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15)
     ls = (1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1)
-    subkey={}
+    c28_next = c28
+    d28_next = d28 
     for i in idx:
         
         sub_c28=[]
         n = ls[i]
-        sub_c28 = sub_c28 + c28[n:]
-        sub_c28 = sub_c28 + c28[0:n]  
+        sub_c28 = sub_c28 + c28_next[n:]
+        sub_c28 = sub_c28 + c28_next[0:n]  
 
         sub_d28=[]
         n = ls[i]
-        sub_d28 = sub_d28 + d28[n:]
-        sub_d28 = sub_d28 + d28[0:n] 
+        sub_d28 = sub_d28 + d28_next[n:]
+        sub_d28 = sub_d28 + d28_next[0:n] 
 
         cd56 = sub_c28 + sub_d28
 
@@ -92,6 +87,9 @@ def key_breakup_to16keys(key=None):
         for si in subkey_idx:
             subkey_temp.append(cd56[si])
         yield subkey_temp
+
+        c28_next = sub_c28
+        d28_next = sub_d28
 
 
 
@@ -135,13 +133,13 @@ def plain_text_lr0(plain_text=None):
 
 
 def r32_to_er48(Rx=None):
-    '''将32位R序列转换为48位R序列
+    '''将32位R序列扩展为48位R序列
 
     Keyword arguments:
     Rx --   待转换的32位R序列，是一个[true,false,...]
 
     Returns:
-    Rnew    --  转换后的48位R序列  [true, false,...]
+    Rnew    --  扩展后的48位R序列  [true, false,...]
     '''
 
     if Rx is None:

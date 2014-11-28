@@ -2,11 +2,16 @@
 
 import p1
 
+mkey = b'\x11\x22\x33\x44\x55\x66\x77\x88'
+plain_test = b'\xaa\xbb\xcc\xdd\x11\x22\x33\x44'
+
+mkey = b'\x73\x65\x63\x75\x72\x69\x74\x79'
+plain_test = b'\x63\x6f\x6d\x70\x75\x74\x65\x72'
+
 def keybreakup():
-    mkey = b'\x11\x22\x33\x44\x55\x66\x77\x88'
     subkey = p1.key_breakup_to16keys(key=mkey)
     for k in subkey:
-        print(subkey[k])
+        print_boollist(k)
 
 def plain_text_lr0_test():
     plain_text = b'\x11\x22\x33\x44\x55\x66\x77\x88'
@@ -30,6 +35,19 @@ def temp():
     a = a << 1
     print(a)
 
+def print_boollist(blist=None):
+    if blist is None:
+        return
+    v = 0
+    for b in blist:
+        v = v << 1
+        if b:
+            v = v + 1
+    nbytes, rem = divmod(v.bit_length(), 8)
+    if rem:
+        nbytes += 1
+    bs = v.to_bytes(nbytes, 'big')
+    print_bytes(bs)
 
 def print_bytes(bs=None):
     if bs is None:
@@ -63,11 +81,7 @@ def l0r0():
 
 
 def des_encrypt():
-    mkey = b'\x11\x22\x33\x44\x55\x66\x77\x88'
-    plain_test = b'\xaa\xbb\xcc\xdd\x11\x22\x33\x44'
 
-    mkey = b'\x73\x65\x63\x75\x72\x69\x74\x79'
-    plain_test = b'\x63\x6f\x6d\x70\x75\x74\x65\x72'
 
     print('mkey')
     print_bytes(mkey)
@@ -82,6 +96,7 @@ def des_encrypt():
 
 if __name__=='__main__':
     
+    #keybreakup()
     #temp()
     des_encrypt()
     #l0r0()
