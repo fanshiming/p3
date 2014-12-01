@@ -8,6 +8,10 @@ plain_test = b'\xaa\xbb\xcc\xdd\x11\x22\x33\x44'
 mkey = b'\x73\x65\x63\x75\x72\x69\x74\x79'
 plain_test = b'\x63\x6f\x6d\x70\x75\x74\x65\x72'
 
+#3des的秘钥
+tmkey = mkey + mkey
+
+
 def keybreakup():
     subkey = p1.key_breakup_to16keys(key=mkey)
     for k in subkey:
@@ -93,10 +97,21 @@ def des_encrypt():
     v2 = p1.des_decrypt(key = mkey, bs = v)
     print_bytes(v2)
 
+def tdes():
+    print('tmkey')
+    print_bytes(tmkey)
+    print_bytes(plain_test)
+
+    v = p1.tdes_encrypt(key = tmkey, plain_bytes = plain_test)
+    print_bytes(v)
+
+    v2 = p1.tdes_decrypt(key = tmkey, bs = v)
+    print_bytes(v2)
 
 if __name__=='__main__':
     
     #keybreakup()
     #temp()
-    des_encrypt()
+    #des_encrypt()
     #l0r0()
+    tdes()

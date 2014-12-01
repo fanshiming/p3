@@ -1,9 +1,27 @@
 # -*- coding: utf-8 -*-
 
 '''
+在实现了DES的基础上，进一步实现3DES加密和解密
+不考虑实用性问题，仅支持对一个块（64bits明文）用128bits秘钥加密和解密。
+如果想实现其他模式，比如对更长的明文加密，ECB模式，可以在此基础上通过反复调用3DES函数简单实现。
+但是如果想实现其他秘钥选项（这里默认的是选项2，即k1=k3, k2独立），则需要重写TDES的代码。
+关于秘钥选项的说明参考http://zh.wikipedia.org/wiki/3DES
+
+用Python3写的DES
+不考虑性能问题，仅仅是将DES用python实现
+这里写的DES不考虑实用性问题。因此仅实现对一个块（一组64bits的明文）用64bits的秘钥加密和解密。
+如果想实现其他模式，比如对更长的明文加密，可以在此基础上简单实现。
+
+
 python3.4
 
-没有找到直接的位处理类型，这里将使用 true, false 的序列代替位串。
+写DES需要位串操作，在python3中暂没有找到内置库支持位串类型，
+因此这里将使用(true, false,...)序列代替位串。
+
+DES算法叙述中一般用一个块来指代64个比特(对应程序语言中的8个byte)，
+块中比特的顺序从左至右为第1,2，。。。n,。。个比特。这里提到块，都是按照这种约定，即一个块=8bytes,且比特顺序也固定了。
+
+written by fanshiming 2014
 '''
 
 
@@ -412,3 +430,58 @@ def des_decrypt(key=None, bs=None):
             v = v + 1
     return v.to_bytes(8,'big')
 
+def tdes_encrypt(key=None, plain_bytes=None):
+    '''3DES加密  加密过程为：C=Ek3(Dk2(Ek1(P))) 
+    为了简单起见，直接默认key是128bits秘钥。
+    秘钥选择选项共有三种，这里默认为秘钥选项2,，即k1 k2是独立的，而k1=k3。参考 http://zh.wikipedia.org/wiki/3DES
+
+    Keyword arguments:
+    key     --  128位秘钥  16bytes. k1=k3   
+    plain_bytes     --  64位明文
+
+    Returns:
+    bytes   --  加密后的64位密文
+    '''
+
+    #依据key计算k1 k2 k3
+    k1 = key[0:8]
+    k2 = key[8:16]
+    k3 = k1 
+
+    #用K1进行DES加密
+    t = des_encrypt(key = k1, plain_bytes = plain_bytes)
+    #用k2进行DES解密
+    t = des_decrypt(key = k2, bs = t)
+    #用k3进行加密
+    t = des_encrypt(key=k3, plain_bytes = t)
+
+    return t
+
+
+def tdes_decrypt(key=None, bs=None):
+    '''3DES解密  解密过程为：P=Dk1((EK2(Dk3(C))) 
+    为了简单起见，直接默认key是128bits秘钥。
+    秘钥选择选项共有三种，这里默认为秘钥选项2,，即k1 k2是独立的，而k1=k3。参考 http://zh.wikipedia.org/wiki/3DES
+
+    Keyword arguments:
+    key     --  128位秘钥  16bytes. k1=k3   
+    plain_bytes     --  64位报文
+
+    Returns:
+    bytes   --  解密后的64位报文
+    '''
+
+    #依据key计算k1 k2 k3
+    k1 = key[0:8]
+    k2 = key[8:16]
+    k3 = k1 
+
+
+    #用k3进行DES解密
+    t = des_decrypt(key = k3, bs = bs)
+    #用K2进行DES加密
+    t = des_encrypt(key = k2, plain_bytes = t)
+    #用k1进行解密
+    t = des_decrypt(key=k1, bs = t)
+
+    return t
